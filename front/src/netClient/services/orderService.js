@@ -219,7 +219,7 @@ export async function deleteObject(id) {
     });
   } catch (error) {
     console.log({ error });
-    alert("Нельзя удалить объекты, на которые существует заявка")
+    alert("Нельзя удалить объекты, на которые существует заявка");
     throw error;
   }
 }
@@ -236,7 +236,7 @@ export async function fetchWorking(id) {
     return responce.data;
   } catch (error) {
     console.log({ error });
-    alert("Нельзя удалить объекты, на которые существует заявка")
+    alert("Нельзя удалить объекты, на которые существует заявка");
     throw error;
   }
 }
@@ -259,13 +259,17 @@ export async function fetchToOffer(id) {
 
 export async function offerSecurity(id) {
   try {
-    let responce = await http.post("/order/url/offer",{}, {
-      headers: {
-        login: sessionStorage.login,
-        password: sessionStorage.password,
-        id: id,
-      },
-    });
+    let responce = await http.post(
+      "/order/url/offer",
+      {},
+      {
+        headers: {
+          login: sessionStorage.login,
+          password: sessionStorage.password,
+          id: id,
+        },
+      }
+    );
     return responce.data;
   } catch (error) {
     console.log({ error });
@@ -282,6 +286,51 @@ export async function fetchOffered(id) {
         id: id,
       },
     });
+    return responce.data;
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+
+export async function changeTask(amount, id) {
+  try {
+    let responce = await http.patch(
+      "/order/url/changeOrder",
+      {},
+      {
+        headers: {
+          login: sessionStorage.login,
+          password: sessionStorage.password,
+          amount,
+          id,
+        },
+      }
+    );
+    return responce.data;
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+
+export async function changeObject(character, adress, description, id) {
+  try {
+    let responce = await http.patch(
+      "/order/url/changeObject",
+      {
+        character,
+        adress,
+        description,
+        id,
+      },
+      {
+        headers: {
+          login: sessionStorage.login,
+          password: sessionStorage.password,
+        },
+      }
+    );
     return responce.data;
   } catch (error) {
     console.log({ error });

@@ -31,10 +31,24 @@
         <button class="submit-btn" @click="deleteOrder" type="submit">
           Удалить задание
         </button>
-        <br />
+        <div><br/></div>
+        <form @submit.prevent="onFormSubmit">
+          <label for="amountPeople"></label>
+          Изменить количество людей требуемых в заявке на
+          <br />
+          <input
+            v-model="amountPeople"
+            id="amountPeople"
+            type="number"
+            required
+            min="0"
+            max="10000"
+          />
+          <button class="submit-btn" type="submit">Изменить задание</button>
+        </form>
       </div>
       <br />
-      <ul v-if="workingList.length>0">
+      <ul v-if="workingList.length > 0">
         Работающие охранники:
         <li
           class="list"
@@ -47,7 +61,7 @@
           <div>Эл. почта охранника: {{ worker.email }}</div>
         </li>
       </ul>
-      <ul v-if="order.amount_of_people_needed > 0  && offeredList.length>0">
+      <ul v-if="order.amount_of_people_needed > 0 && offeredList.length > 0">
         Охранники которым отправлено предложение на работу:
         <li
           class="list"
@@ -68,7 +82,7 @@
         </li>
       </ul>
 
-      <ul v-if="order.amount_of_people_needed > 0 && toOfferList.length>0">
+      <ul v-if="order.amount_of_people_needed > 0 && toOfferList.length > 0">
         Подходящие охранники:
         <li
           class="list"
@@ -101,6 +115,7 @@ import {
   fetchToOffer,
   offerSecurity,
   fetchOffered,
+  changeTask,
 } from "@/netClient/services/orderService";
 export default {
   name: "HomePage",
@@ -109,6 +124,7 @@ export default {
     workingList: [],
     toOfferList: [],
     offeredList: [],
+    amountPeople: 0,
   }),
   async mounted() {
     if (sessionStorage?.order_id) {
@@ -166,6 +182,14 @@ export default {
     async fetchOffered() {
       try {
         this.offeredList = await fetchOffered(sessionStorage.order_id);
+      } catch (error) {
+        console.error({ error });
+      }
+    },
+    async onFormSubmit() {
+      try {
+        await changeTask(this.amountPeople, sessionStorage.order_id);
+        this.fetchOrder();
       } catch (error) {
         console.error({ error });
       }

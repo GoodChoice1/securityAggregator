@@ -1,6 +1,7 @@
 <template>
   <div class="main">
     Создать заявку
+    <div><br/></div>
     <form @submit="onFormSubmit">
       <div class="form-field">
         <label for="amountPeople"></label>
