@@ -92,6 +92,16 @@ function initRoutes() {
     asyncHandler(connectionHandler),
     asyncHandler(deleteObject)
   );
+  router.patch(
+    "/url/changeOrder",
+    asyncHandler(connectionHandler),
+    asyncHandler(changeOrder)
+  );
+  router.patch(
+    "/url/changeObject",
+    asyncHandler(connectionHandler),
+    asyncHandler(changeObject)
+  );
 }
 
 function dateToString(date) {
@@ -394,6 +404,30 @@ async function getOffered(req, res, next) {
   result = result.rows;
   client.end();
   res.status(200).json(result);
+}
+
+async function changeOrder(req, res, next) {
+  let client = req.client;
+  client.connect();
+
+  query = `
+  UPDATE orders SET amount_of_people_needed = ${req.headers.amount} WHERE id = ${req.headers.id};
+  `;
+  await client.query(query);
+  client.end();
+  res.status(200).json("OK");
+}
+
+async function changeObject(req, res, next) {
+  let client = req.client;
+  client.connect();
+
+  query = `
+  UPDATE objects SET adress = $nonono$${req.body.adress}$nonono$, description = $nonono$${req.body.description}$nonono$, object_character = $nonono$${req.body.character}$nonono$ WHERE id = ${req.body.id};
+  `;
+  await client.query(query);
+  client.end();
+  res.status(200).json("OK");
 }
 
 initRoutes();
