@@ -18,6 +18,9 @@
     <router-link class="link" to="/object" v-if="isClient()">
       Выбранный объект
     </router-link>
+    <router-link class="link" to="/contracts" v-if="isClient()">
+      Контракты
+    </router-link>
     <a class="link" @click="onLogoutClicked"> Выход </a>
   </div>
 </template>

@@ -102,17 +102,27 @@ function initRoutes() {
     asyncHandler(connectionHandler),
     asyncHandler(changeObject)
   );
+  router.get(
+    "/url/contracts",
+    asyncHandler(connectionHandler),
+    asyncHandler(getContracts)
+  );
 }
 
 function dateToString(date) {
   let day = "";
-  if (parseInt(date.getDate()) < 10) {
+  let month = "";
+  if (parseInt(date.getDate()) < 10){
     day = "0";
+  }
+  if (parseInt(date.getMonth())<10){
+    month = "0";
   }
   return (
     parseInt(date.getYear()) +
     1900 +
     "-" +
+    month +
     (parseInt(date.getMonth()) + 1) +
     "-" +
     day +
@@ -429,6 +439,24 @@ async function changeObject(req, res, next) {
   client.end();
   res.status(200).json("OK");
 }
+
+async function getContracts(req, res, next) {
+  let client = req.client;
+  client.connect();
+
+  query = `
+  SELECT * FROM contract;
+  `;
+  let result = await client.query(query);
+  client.end();
+  result = result.rows;
+  for (let i = 0; i < result.length; i++) {
+    if (result[i].date_of_expiration)
+      result[i].date_of_expiration = dateToString(result[i].date_of_expiration);
+  }
+  res.status(200).json(result);
+}
+
 
 initRoutes();
 

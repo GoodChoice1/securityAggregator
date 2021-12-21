@@ -337,3 +337,18 @@ export async function changeObject(character, adress, description, id) {
     throw error;
   }
 }
+
+export async function fetchContracts() {
+  try {
+    let responce = await http.get("/order/url/contracts", {
+      headers: {
+        login: sessionStorage.login,
+        password: sessionStorage.password,
+      },
+    });
+    return responce.data;
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}

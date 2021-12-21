@@ -194,7 +194,7 @@ export default {
         }
         await createOrder(
           this.amountPeople,
-          this.description.trim,
+          this.description.trim(),
           this.price,
           this.dateStart,
           this.dateEnd,
