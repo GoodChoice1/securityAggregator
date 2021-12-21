@@ -1,4 +1,4 @@
-const { Router } = require("express");
+const { Router, query } = require("express");
 const {
   asyncHandler,
   connectionHandler,
@@ -107,6 +107,11 @@ function initRoutes() {
     asyncHandler(connectionHandler),
     asyncHandler(getContracts)
   );
+  router.delete(
+    "/url/working",
+    asyncHandler(connectionHandler),
+    asyncHandler(deleteWorking)
+  );
 }
 
 function dateToString(date) {
@@ -178,7 +183,7 @@ async function getOrder(req, res, next) {
   let client = req.client;
   client.connect();
   let query = `
-    SELECT * 
+    SELECT adress, amount_of_people_needed, o.description, ob.description as obj_description, o.id, price_per_hour, weapon_license, work_date_start, work_date_end, work_experience, height, is_certificated, driver_license, object_character
     FROM orders o
     JOIN objects ob ON ob.id = o.id_object
     JOIN guard_character g ON g.id = o.id_character 
@@ -403,8 +408,8 @@ async function getOffered(req, res, next) {
   let client = req.client;
   client.connect();
 
-  query = `
-  DELETE FROM offers WHERE id_order = (SELECT obj_id FROM guardsOffered  WHERE amount_of_people_needed<1);
+  let query = `
+  DELETE FROM offers WHERE id_order = (SELECT obj_id FROM guardsOffered  WHERE amount_of_people_needed<1 AND obj_id = ${req.headers.id} LIMIT 1);
   `;
   let result = await client.query(query);
   query = `
@@ -420,7 +425,7 @@ async function changeOrder(req, res, next) {
   let client = req.client;
   client.connect();
 
-  query = `
+  let query = `
   UPDATE orders SET amount_of_people_needed = ${req.headers.amount} WHERE id = ${req.headers.id};
   `;
   await client.query(query);
@@ -455,6 +460,22 @@ async function getContracts(req, res, next) {
       result[i].date_of_expiration = dateToString(result[i].date_of_expiration);
   }
   res.status(200).json(result);
+}
+
+async function deleteWorking(req, res, next) {
+  let client = req.client;
+  client.connect();
+
+  let query = `
+  UPDATE orders SET amount_of_people_needed = amount_of_people_needed + 1 WHERE id = ${req.headers.id_order}
+  `;
+  await client.query(query);
+  query = `
+  DELETE FROM working_securities WHERE id_security = ${req.headers.id_security} AND id_order = ${req.headers.id_order};
+  `;
+  await client.query(query);
+  client.end();
+  res.status(200).json("Успешно");
 }
 
 

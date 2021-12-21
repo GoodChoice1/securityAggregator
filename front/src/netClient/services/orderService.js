@@ -352,3 +352,21 @@ export async function fetchContracts() {
     throw error;
   }
 }
+
+export async function deleteWorking(id_security,id_order) {
+  try {
+    let responce = await http.delete("/order/url/working", {
+      headers: {
+        login: sessionStorage.login,
+        password: sessionStorage.password,
+        id_security,
+        id_order
+      },
+    });
+    return responce.data;
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+

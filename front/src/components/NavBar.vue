@@ -21,6 +21,12 @@
     <router-link class="link" to="/contracts" v-if="isClient()">
       Контракты
     </router-link>
+    <router-link class="link" to="/registerClient" v-if="isAdmin()">
+      Регистрация клиента
+    </router-link>
+    <router-link class="link" to="/registerGuard" v-if="isAdmin()">
+      Регистрация охранника
+    </router-link>
     <a class="link" @click="onLogoutClicked"> Выход </a>
   </div>
 </template>
@@ -47,6 +53,9 @@ export default {
     isClient() {
       return sessionStorage.userRole == "Клиент";
     },
+    isAdmin(){
+      return sessionStorage.userRole == "Администратор";
+    }
   },
 };
 </script>

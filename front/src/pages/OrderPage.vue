@@ -16,6 +16,7 @@
         <div>Дата окончания работ: {{ order.work_date_end }}</div>
         <div>Описание работ: {{ order.description }}</div>
         <div>Характер объекта: {{ order.object_character }}</div>
+        <div>Описание объекта: {{ order.obj_description }}</div>
         <div>Адрес: {{ order.adress }}</div>
         <div>
           Минимальный опыт работы в месяцах: {{ order.work_experience }}
@@ -31,7 +32,7 @@
         <button class="submit-btn" @click="deleteOrder" type="submit">
           Удалить задание
         </button>
-        <div><br/></div>
+        <div><br /></div>
         <form @submit.prevent="onFormSubmit">
           <label for="amountPeople"></label>
           Изменить количество людей требуемых в заявке на
@@ -59,6 +60,9 @@
           <div>ФИО охранника: {{ worker.full_name }}</div>
           <div>Телефон охранника: {{ worker.phone_number }}</div>
           <div>Эл. почта охранника: {{ worker.email }}</div>
+          <button class="submit-btn" @click="deleteWorking(worker.id,worker.ord_id)" type="submit">
+            Отказаться работать с охранником
+          </button>
         </li>
       </ul>
       <ul v-if="order.amount_of_people_needed > 0 && offeredList.length > 0">
@@ -116,6 +120,7 @@ import {
   offerSecurity,
   fetchOffered,
   changeTask,
+  deleteWorking,
 } from "@/netClient/services/orderService";
 export default {
   name: "HomePage",
@@ -190,6 +195,16 @@ export default {
       try {
         await changeTask(this.amountPeople, sessionStorage.order_id);
         this.fetchOrder();
+      } catch (error) {
+        console.error({ error });
+      }
+    },
+    async deleteWorking(id_security,id_order) {
+      try {
+        await deleteWorking(id_security,id_order);
+        this.fetchOrder();
+        this.fetchWorking();
+        this.fetchToOffer();
       } catch (error) {
         console.error({ error });
       }
