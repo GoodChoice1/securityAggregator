@@ -5,6 +5,7 @@ const {
 } = require("../middlewares/middlewares");
 const sha256 = require("js-sha256");
 const ErrorResponse = require("../classes/error-response");
+const { resolveSoa } = require("dns");
 const router = Router();
 
 function initRoutes() {
@@ -152,6 +153,46 @@ function initRoutes() {
     "/admin/client",
     asyncHandler(connectionHandler),
     asyncHandler(createClient)
+  );
+  router.get(
+    "/admin/1client",
+    asyncHandler(connectionHandler),
+    asyncHandler(getOneClient)
+  );
+  router.get(
+    "/admin/1guard",
+    asyncHandler(connectionHandler),
+    asyncHandler(getOneGuard)
+  );
+  router.get(
+    "/admin/contract",
+    asyncHandler(connectionHandler),
+    asyncHandler(getOneContract)
+  );
+  router.patch(
+    "/admin/client",
+    asyncHandler(connectionHandler),
+    asyncHandler(updateClient)
+  );
+  router.patch(
+    "/admin/client/login",
+    asyncHandler(connectionHandler),
+    asyncHandler(changeLoginManager)
+  );
+  router.patch(
+    "/admin/client/password",
+    asyncHandler(connectionHandler),
+    asyncHandler(changePasswordManager)
+  );
+  router.post(
+    "/admin/contract",
+    asyncHandler(connectionHandler),
+    asyncHandler(addContract)
+  );
+  router.patch(
+    "/admin/guards",
+    asyncHandler(connectionHandler),
+    asyncHandler(updateGuard)
   );
 }
 
@@ -492,7 +533,7 @@ async function getContracts(req, res, next) {
   client.connect();
 
   let query = `
-  SELECT * FROM contract;
+  SELECT * FROM contract ORDER BY date_of_expiration DESC;
   `;
   let result = await client.query(query);
   client.end();
@@ -712,6 +753,163 @@ async function createClient(req, res, next) {
   query = `
   INSERT INTO legal_entitys (id_person, legal_name, inn, ogrn, kpp, legal_addres, physical_addres)
   VALUES (${result[1].rows[0].id}, $nonono$${req.body.orgname}$nonono$,${req.body.inn},${req.body.ogrn},${req.body.kpp},$nonono$${req.body.uradres}$nonono$,$nonono$${req.body.fizadres}$nonono$)
+  `;
+
+  await client.query(query);
+
+  client.end();
+  res.status(200).json("OK");
+}
+
+async function getOneGuard(req, res, next) {
+  let client = req.client;
+  client.connect();
+
+  let query = `
+  SELECT g.id as gid, p.id as pid, weapon_license, height, work_experience, driver_license, is_certificated, phone_number, full_name, login, email
+  FROM security_guards s
+  JOIN persons p ON p.id = s.id_person
+  JOIN guard_character g ON g.id = s.id_character 
+  WHERE s.id = ${req.headers.id}
+  `;
+  let result = await client.query(query);
+  result = result.rows;
+  client.end();
+  res.status(200).json(result);
+}
+
+async function getOneClient(req, res, next) {
+  let client = req.client;
+  client.connect();
+
+  let query = `
+  SELECT l.id as lid, p.id as pid, legal_name, inn, ogrn, kpp, legal_addres, physical_addres, phone_number, full_name, login, email
+  FROM legal_entitys l
+  JOIN persons p ON p.id = l.id_person
+  WHERE l.id = ${req.headers.id};
+  `;
+  let result = await client.query(query);
+  result = result.rows;
+  client.end();
+  res.status(200).json(result);
+}
+
+async function getOneContract(req, res, next) {
+  let client = req.client;
+  client.connect();
+
+  let query = `
+  SELECT * FROM contract WHERE id_legal_entity = ${req.headers.id} ORDER BY date_of_expiration DESC;
+  `;
+  let result = await client.query(query);
+  result = result.rows;
+  for (let i = 0; i < result.length; i++) {
+    if (result[i].date_of_expiration)
+      result[i].date_of_expiration = dateToString(result[i].date_of_expiration);
+  }
+  client.end();
+  res.status(200).json(result);
+}
+
+async function updateClient(req, res, next) {
+  let client = req.client;
+  client.connect();
+
+  let query = `
+  SELECT count(*) FROM persons WHERE phone_number = ${req.body.phone} AND id != ${req.body.pid};
+  SELECT count(*) FROM persons WHERE email = $nonono$${req.body.email}$nonono$ AND id != ${req.body.pid};
+  SELECT count(*) FROM legal_entitys WHERE legal_name = $nonono$${req.body.orgname}$nonono$ AND id != ${req.body.lid};
+  SELECT count(*) FROM legal_entitys WHERE inn = $nonono$${req.body.inn}$nonono$ AND id != ${req.body.lid};
+  SELECT count(*) FROM legal_entitys WHERE ogrn = $nonono$${req.body.ogrn}$nonono$ AND id != ${req.body.lid};
+  `;
+  let result = await client.query(query);
+  if (result[0].rows[0].count > 0) {
+    throw new ErrorResponse("Телефон занят", 401);
+  } else if (result[1].rows[0].count > 0) {
+    throw new ErrorResponse("Почта занята", 401);
+  } else if (result[2].rows[0].count > 0) {
+    throw new ErrorResponse("Юр лицо с таким названием существует", 401);
+  } else if (result[3].rows[0].count > 0) {
+    throw new ErrorResponse("Юр лицо с таким инн существует", 401);
+  } else if (result[4].rows[0].count > 0) {
+    throw new ErrorResponse("Юр лицо с таким огрн существует", 401);
+  }
+  query = `
+  UPDATE legal_entitys SET legal_name = $nonono$${req.body.orgname}$nonono$, inn = ${req.body.inn}, ogrn = ${req.body.ogrn}, kpp = ${req.body.kpp}, 
+  legal_addres = $nonono$${req.body.uradres}$nonono$, physical_addres = $nonono$${req.body.fizadres}$nonono$ WHERE id = ${req.body.lid};
+  UPDATE persons SET full_name = $nonono$${req.body.fio}$nonono$, phone_number =  ${req.body.phone}, email =  $nonono$${req.body.email}$nonono$ WHERE id=${req.body.pid}
+  `;
+  result = await client.query(query);
+
+  client.end();
+  res.status(200).json("OK");
+}
+
+async function changeLoginManager(req, res, next) {
+  let client = req.client;
+  client.connect();
+
+  let query = `
+  SELECT count(*) FROM persons WHERE login = $nonono$${req.body.newlogin}$nonono$;
+  `;
+  let result = await client.query(query);
+  if (result.rows[0].count > 0) {
+    throw new ErrorResponse("Логин занят", 401);
+  }
+  query = `
+  SELECT login FROM persons WHERE id=${req.body.id};
+  UPDATE persons SET login = $nonono$${req.body.newlogin}$nonono$ WHERE id=${req.body.id};
+  `;
+  result = await client.query(query);
+  query = `
+  ALTER USER ${result[0].rows[0].login}
+  RENAME TO ${req.body.newlogin};
+  `;
+  await client.query(query);
+  client.end();
+  res.status(200).json("OK");
+}
+
+async function changePasswordManager(req, res, next) {
+  let client = req.client;
+  client.connect();
+  let password = sha256(req.body.password);
+  let query = `
+  ALTER USER ${req.body.login} WITH PASSWORD $nonono$${password}$nonono$;
+  `;
+  await client.query(query);
+  client.end();
+  res.status(200).json("OK");
+}
+
+async function addContract(req, res, next) {
+  let client = req.client;
+  client.connect();
+  let query = `
+  INSERT INTO contract VALUES(${req.body.cid},${req.body.lid},'${req.body.date}')
+  `;
+  await client.query(query);
+  client.end();
+  res.status(200).json("OK");
+}
+
+async function updateGuard(req, res, next) {
+  let client = req.client;
+  client.connect();
+
+  let query = `
+  SELECT count(*) FROM persons WHERE phone_number = ${req.body.phone} AND id != ${req.body.pid};
+  SELECT count(*) FROM persons WHERE email = $nonono$${req.body.email}$nonono$ AND id != ${req.body.pid};
+  `;
+  let result = await client.query(query);
+  if (result[0].rows[0].count > 0) {
+    throw new ErrorResponse("Телефон занят", 401);
+  } else if (result[1].rows[0].count > 0) {
+    throw new ErrorResponse("Почта занята", 401);
+  }
+  query = `
+  UPDATE guard_character SET weapon_license = ${req.body.weapon}, work_experience = ${req.body.experience}, height = ${req.body.height}, driver_license = ${req.body.driver}, is_certificated = ${req.body.certificated} WHERE id = ${req.body.gid};
+  UPDATE persons SET phone_number = ${req.body.phone}, full_name = $nononon$${req.body.fio}$nononon$, email = $nononon$${req.body.email}$nononon$ WHERE id = ${req.body.pid}
   `;
 
   await client.query(query);

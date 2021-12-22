@@ -30,8 +30,14 @@
     <router-link class="link" to="/registerClient" v-if="isAdmin()">
       ЮрЛица
     </router-link>
+    <router-link class="link" to="/changeClient" v-if="isAdmin()">
+      Изменить юрлицо
+    </router-link>
     <router-link class="link" to="/registerGuard" v-if="isAdmin()">
       Охранники
+    </router-link>
+    <router-link class="link" to="/changeGuard" v-if="isAdmin()">
+      Изменить охранника
     </router-link>
     <a class="link" @click="onLogoutClicked"> Выход </a>
   </div>

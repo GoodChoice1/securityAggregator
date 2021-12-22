@@ -102,23 +102,20 @@
 
     <ul>
       <li v-for="client in clientList" :key="client.id">
-        <div>ФИО клиента: {{ client.full_name }}</div>
-        <div>Логин: {{ client.login }}</div>
-        <div>Телефон: {{ client.phone_number }}</div>
-        <div>Наименование юр.лица: {{ client.legal_name }}</div>
-        <div>ИНН: {{ client.inn }}</div>
-        <div>ОГРН: {{ client.ogrn }}</div>
-        <div>КПП: {{ client.kpp }}</div>
-        <div>Эл.почта: {{ client.email }}</div>
-        <div>Юр. адрес: {{ client.legal_addres }}</div>
-        <div>Физ. адрес: {{ client.physical_addres }}</div>
-        <button
-          class="submit-btn"
-          @click="deleteClient(client.id, client.id_person, client.login)"
-          type="submit"
-        >
-          Удалить клиента
-        </button>
+        <a @click="redirect(client.id)">
+          <div>ФИО клиента: {{ client.full_name }}</div>
+          <div>Логин: {{ client.login }}</div>
+          <div>Телефон: {{ client.phone_number }}</div>
+          <div>Наименование юр.лица: {{ client.legal_name }}</div>
+          <div>Эл.почта: {{ client.email }}</div>
+          <button
+            class="submit-btn"
+            @click="deleteClient(client.id, client.id_person, client.login)"
+            type="submit"
+          >
+            Удалить клиента
+          </button>
+        </a>
         <div><br /></div>
       </li>
     </ul>
@@ -153,7 +150,15 @@ export default {
   methods: {
     async onFormSubmit() {
       try {
-        let sqlCheck = this.fio + this.email + this.login + this.pass;
+        let sqlCheck =
+          this.fio +
+          this.email +
+          this.login +
+          this.pass +
+          this.orgname +
+          this.orgname +
+          this.uradres +
+          this.fizadres;
         if (sqlCheck.search('\\"') != -1) {
           alert(
             "Не используйте в полях ввода такие знаки как ' , \" , $ , - , * или / "
@@ -190,9 +195,40 @@ export default {
           );
           throw "Error input";
         }
-        if (sqlCheck.search("\\/") != -1) {
-          alert("Логин должен состоять");
-          throw "Error input";
+        let arr = [
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f",
+          "g",
+          "h",
+          "i",
+          "j",
+          "k",
+          "l",
+          "m",
+          "n",
+          "o",
+          "p",
+          "q",
+          "r",
+          "s",
+          "t",
+          "u",
+          "v",
+          "w",
+          "x",
+          "y",
+          "z",
+        ];
+        let bebra = String(this.login.trim()).split("");
+        for (let i = 0; i < bebra.length; i++) {
+          if (arr.indexOf(bebra[i]) == -1) {
+            alert("В логине должны быть только английские строчные буквы");
+            throw "Error input";
+          }
         }
         await regClient(
           this.fio.trim(),
@@ -247,6 +283,14 @@ export default {
       try {
         await deleteClient(lid, pid, login);
         this.fetchClientList();
+      } catch (error) {
+        console.error({ error });
+      }
+    },
+    async redirect(id) {
+      try {
+        sessionStorage.clientId = id;
+        this.$router.push("/changeClient");
       } catch (error) {
         console.error({ error });
       }

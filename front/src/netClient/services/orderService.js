@@ -567,3 +567,193 @@ export async function regClient(
     throw error;
   }
 }
+
+export async function fetchExactClient(id) {
+  try {
+    let responce = await http.get("/order/admin/1client", {
+      headers: {
+        login: sessionStorage.login,
+        password: sessionStorage.password,
+        id,
+      },
+    });
+    return responce.data[0];
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+
+export async function fetchExactGuard(id) {
+  try {
+    let responce = await http.get("/order/admin/1guard", {
+      headers: {
+        login: sessionStorage.login,
+        password: sessionStorage.password,
+        id,
+      },
+    });
+    return responce.data[0];
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+
+export async function fetchOneContract(id) {
+  try {
+    let responce = await http.get("/order/admin/contract", {
+      headers: {
+        login: sessionStorage.login,
+        password: sessionStorage.password,
+        id,
+      },
+    });
+    return responce.data;
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+
+export async function changeClient(
+  fio,
+  phone,
+  email,
+  orgname,
+  inn,
+  ogrn,
+  kpp,
+  uradres,
+  fizadres,
+  lid,
+  pid
+) {
+  try {
+    let responce = await http.patch(
+      "/order/admin/client",
+      {
+        fio,
+        phone,
+        email,
+        orgname,
+        inn,
+        ogrn,
+        kpp,
+        uradres,
+        fizadres,
+        lid,
+        pid,
+      },
+      {
+        headers: {
+          login: sessionStorage.login,
+          password: sessionStorage.password,
+        },
+      }
+    );
+    return responce.data;
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+
+export async function changeLoginManager(newlogin, id) {
+  try {
+    let responce = await http.patch(
+      "/order/admin/client/login",
+      { newlogin, id },
+      {
+        headers: {
+          login: sessionStorage.login,
+          password: sessionStorage.password,
+        },
+      }
+    );
+    return responce.data;
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+
+export async function changePassword(login, password) {
+  try {
+    password = sha256(password);
+    let responce = await http.patch(
+      "/order/admin/client/password",
+      { login, password },
+      {
+        headers: {
+          login: sessionStorage.login,
+          password: sessionStorage.password,
+        },
+      }
+    );
+    return responce.data;
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+
+export async function addContract(cid, date, lid) {
+  try {
+    let responce = await http.post(
+      "/order/admin/contract",
+      { cid, date, lid },
+      {
+        headers: {
+          login: sessionStorage.login,
+          password: sessionStorage.password,
+        },
+      }
+    );
+    return responce.data;
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+
+export async function changeGuard(
+  fio,
+  phone,
+  email,
+  experience,
+  height,
+  driver,
+  certificated,
+  weapon,
+  gid,
+  pid
+) {
+  try {
+    let responce = await http.patch(
+      "/order/admin/guards",
+      {
+        fio,
+        phone,
+        email,
+        experience,
+        height,
+        driver,
+        certificated,
+        weapon,
+        gid,
+        pid,
+      },
+      {
+        headers: {
+          login: sessionStorage.login,
+          password: sessionStorage.password,
+        },
+      }
+    );
+    return responce.data;
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}

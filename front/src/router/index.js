@@ -112,6 +112,24 @@ const routes = [
     },
     component: () => import("@/pages/GuardPage.vue"),
   },
+  {
+    path: "/changeGuard",
+    name: "changeGuard",
+    meta: {
+      title: "changeGuard",
+      layout: "main-layout",
+    },
+    component: () => import("@/pages/ChangeGuardPage.vue"),
+  },
+  {
+    path: "/changeClient",
+    name: "changeClient",
+    meta: {
+      title: "changeClient",
+      layout: "main-layout",
+    },
+    component: () => import("@/pages/ChangeClientPage.vue"),
+  },
 ];
 
 const router = new VueRouter({
@@ -132,7 +150,7 @@ router.beforeEach((to, from, next) => {
     else if(userRole == "Охранник" && (to.name == "offers" || to.name == "works" || to.name == "guard")){
       next();
     }
-    else if(userRole == "Администратор" && (to.name == "registerClient" || to.name == "registerGuard" )){
+    else if(userRole == "Администратор" && (to.name == "registerClient" || to.name == "registerGuard" || to.name == "changeGuard" || to.name == "changeClient")){
       next();
     }
     else if(userRole == "Охранник"){

@@ -89,24 +89,19 @@
 
     <ul>
       <li v-for="guard in guardList" :key="guard.id">
-        <div>ФИО охранника: {{ guard.full_name }}</div>
-        <div>Рост: {{ guard.height }}</div>
-        <div>Логин: {{ guard.login }}</div>
-        <div>Телефон: {{ guard.phone_number }}</div>
-        <div>Опыт работы в месяцах: {{ guard.work_experience }}</div>
-        <div>Эл.почта: {{ guard.email }}</div>
-        <div v-if="guard.is_certificated">
-          Имеет удостоверение частного охранника
-        </div>
-        <div v-if="guard.weapon_license">Имеет лицензию на оружие</div>
-        <div v-if="guard.driver_license">Имеет водительское удостоверение</div>
-        <button
-          class="submit-btn"
-          @click="deleteGuard(guard.sid, guard.pid, guard.gid, guard.login)"
-          type="submit"
-        >
-          Удалить охранника
-        </button>
+        <a @click="redirect(guard.sid)">
+          <div>ФИО охранника: {{ guard.full_name }}</div>
+          <div>Логин: {{ guard.login }}</div>
+          <div>Телефон: {{ guard.phone_number }}</div>
+          <div>Эл.почта: {{ guard.email }}</div>
+          <button
+            class="submit-btn"
+            @click="deleteGuard(guard.sid, guard.pid, guard.gid, guard.login)"
+            type="submit"
+          >
+            Удалить охранника
+          </button>
+        </a>
         <div><br /></div>
       </li>
     </ul>
@@ -177,6 +172,41 @@ export default {
           );
           throw "Error input";
         }
+        let arr = [
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f",
+          "g",
+          "h",
+          "i",
+          "j",
+          "k",
+          "l",
+          "m",
+          "n",
+          "o",
+          "p",
+          "q",
+          "r",
+          "s",
+          "t",
+          "u",
+          "v",
+          "w",
+          "x",
+          "y",
+          "z",
+        ];
+        let bebra = String(this.login.trim()).split("");
+        for (let i = 0; i < bebra.length; i++) {
+          if (arr.indexOf(bebra[i]) == -1) {
+            alert("В логине должны быть только английские строчные буквы");
+            throw "Error input";
+          }
+        }
         await regGuard(
           this.fio.trim(),
           this.phone,
@@ -196,9 +226,9 @@ export default {
         document.getElementById("pass").value = " ";
         document.getElementById("experience").value = "0";
         document.getElementById("height").value = "0";
-        document.getElementById("driver").value = " ";
-        document.getElementById("certificated").value = " ";
-        document.getElementById("weapon").value = " ";
+        document.getElementById("driver").value = "false";
+        document.getElementById("certificated").value = "false";
+        document.getElementById("weapon").value = "false";
         this.driver = false;
         this.certificated = false;
         this.weapon = false;
@@ -230,6 +260,14 @@ export default {
       try {
         await deleteGuard(sid, pid, gid, login);
         this.fetchGuardList();
+      } catch (error) {
+        console.error({ error });
+      }
+    },
+    async redirect(id) {
+      try {
+        sessionStorage.guardId = id;
+        this.$router.push("/changeGuard");
       } catch (error) {
         console.error({ error });
       }
