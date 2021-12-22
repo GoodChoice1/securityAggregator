@@ -1,7 +1,7 @@
 <template>
   <div class="main">
     Создать заявку
-    <div><br/></div>
+    <div><br /></div>
     <form @submit="onFormSubmit">
       <div class="form-field">
         <label for="amountPeople"></label>
@@ -26,19 +26,40 @@
         <label for="price"></label>
         Ставка за час в рублях
         <br />
-        <input v-model="price" id="price" type="number" min="0" max="999999" required />
+        <input
+          v-model="price"
+          id="price"
+          type="number"
+          min="0"
+          max="999999"
+          required
+        />
       </div>
       <div class="form-field">
         <label for="dateStart"></label>
         Дата начала работ
         <br />
-        <input v-model="dateStart" id="dateStart" min="2010-01-01" max="2050-01-01" type="date" required />
+        <input
+          v-model="dateStart"
+          id="dateStart"
+          min="2010-01-01"
+          max="2050-01-01"
+          type="date"
+          required
+        />
       </div>
       <div class="form-field">
         <label for="dateEnd"></label>
         Дата окончания работ
         <br />
-        <input v-model="dateEnd" id="dateEnd" min="2010-01-01" max="2050-01-01" type="date" required />
+        <input
+          v-model="dateEnd"
+          id="dateEnd"
+          min="2010-01-01"
+          max="2050-01-01"
+          type="date"
+          required
+        />
       </div>
       <div class="form-field">
         <label for="object">Объект<br /></label>
@@ -52,13 +73,27 @@
         <label for="experience"></label>
         Минимальный опыт работы в месяцах
         <br />
-        <input v-model="experience" id="experience" type="number" min="0" max="10000" required />
+        <input
+          v-model="experience"
+          id="experience"
+          type="number"
+          min="0"
+          max="10000"
+          required
+        />
       </div>
       <div class="form-field">
         <label for="height"></label>
         Минимальный рост в см
         <br />
-        <input v-model="height" id="height" type="number" min="0" max="250" required />
+        <input
+          v-model="height"
+          id="height"
+          type="number"
+          min="0"
+          max="250"
+          required
+        />
       </div>
       <div class="form-field">
         <label for="driver"></label>
@@ -106,6 +141,7 @@ import {
   fetchOrderList,
   fetchObjectList,
   createOrder,
+  toLogin,
 } from "@/netClient/services/orderService";
 export default {
   name: "HomePage",
@@ -145,6 +181,8 @@ export default {
       try {
         this.objList = await fetchObjectList();
       } catch (error) {
+        toLogin();
+        this.$router.push("/login");
         console.error({ error });
       }
     },
@@ -156,41 +194,46 @@ export default {
             object_id = this.objList[i].id;
         }
         if (this.description.search('\\"') != -1) {
-          alert("Не используйте в полях ввода такие знаки как ' или \" или $");
+          alert(
+            "Не используйте в полях ввода такие знаки как ' , \" , $ , - , * или / "
+          );
           throw "Error input";
         }
         if (this.description.search("\\'") != -1) {
-          alert("Не используйте в полях ввода такие знаки как ' или \" или $");
+          alert(
+            "Не используйте в полях ввода такие знаки как ' , \" , $ , - , * или / "
+          );
           throw "Error input";
         }
         if (this.description.search("\\$") != -1) {
-          alert("Не используйте в полях ввода такие знаки как ' или \" или $");
+          alert(
+            "Не используйте в полях ввода такие знаки как ' , \" , $ , - , * или / "
+          );
           throw "Error input";
         }
-
-        if (this.dateStart>this.dateEnd){
-            alert("Дата окончания работы не может быть раньше даты начала работы")
-            throw "Error input";
+        if (this.description.search("\\-") != -1) {
+          alert(
+            "Не используйте в полях ввода такие знаки как ' , \" , $ , - , * или / "
+          );
+          throw "Error input";
         }
-
-        if (this.amountPeople<1){
-            alert("Нельзя создать заявку для меньше чем 1 человека")
-            throw "Error input";
+        if (this.description.search("\\*") != -1) {
+          alert(
+            "Не используйте в полях ввода такие знаки как ' , \" , $ , - , * или / "
+          );
+          throw "Error input";
         }
-
-        if (this.price<0){
-            alert("Нельзя ставить отрицательную ставку")
-            throw "Error input";
+        if (this.description.search("\\/") != -1) {
+          alert(
+            "Не используйте в полях ввода такие знаки как ' , \" , $ , - , * или / "
+          );
+          throw "Error input";
         }
-
-        if (this.experience<0){
-            alert("Нельзя ставить отрицательный опыт работы")
-            throw "Error input";
-        }
-
-        if (this.height<0){
-            alert("Нельзя ставить отрицательный рост")
-            throw "Error input";
+        if (this.dateStart > this.dateEnd) {
+          alert(
+            "Дата окончания работы не может быть раньше даты начала работы"
+          );
+          throw "Error input";
         }
         await createOrder(
           this.amountPeople,

@@ -24,10 +24,13 @@ export default {
   methods: {
     async onFormSubmit() {
       try {
-        await login(this.login.trim(), this.password.trim());
+        let log = this.login.trim().toLowerCase();
+        await login(log, this.password.trim());
         if (sessionStorage.userRole == "Охранник") this.$router.push("/offers");
-        else if (sessionStorage.userRole == "Клиент") this.$router.push("/orders");
-        else if (sessionStorage.userRole == "Администратор") this.$router.push("/registerClient");
+        else if (sessionStorage.userRole == "Клиент")
+          this.$router.push("/orders");
+        else if (sessionStorage.userRole == "Администратор")
+          this.$router.push("/registerClient");
       } catch (error) {
         if (
           error.response.data.message == "Connection terminated unexpectedly"

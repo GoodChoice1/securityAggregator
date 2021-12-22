@@ -1,4 +1,3 @@
-const e = require("express");
 const { Router } = require("express");
 const {
   asyncHandler,
@@ -35,11 +34,11 @@ async function login(req, res, next) {
     } else {
       counter = false;
     }
-    res.status(200).json({role: result,canLogin: counter})
+    res.status(200).json({ role: result, canLogin: counter });
+  } else {
+    client.end();
+    res.status(200).json({ role: result });
   }
-  else{
-  client.end();
-  res.status(200).json({role: result});}
 }
 
 initRoutes();

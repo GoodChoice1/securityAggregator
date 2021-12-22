@@ -6,6 +6,9 @@
     <router-link class="link" to="/works" v-if="isSecurity()">
       Список работ
     </router-link>
+    <router-link class="link" to="/guard" v-if="isSecurity()">
+      Профиль
+    </router-link>
     <router-link class="link" to="/orders" v-if="isClient()">
       Заявки
     </router-link>
@@ -21,11 +24,14 @@
     <router-link class="link" to="/contracts" v-if="isClient()">
       Контракты
     </router-link>
+    <router-link class="link" to="/client" v-if="isClient()">
+      Профиль
+    </router-link>
     <router-link class="link" to="/registerClient" v-if="isAdmin()">
-      Регистрация клиента
+      ЮрЛица
     </router-link>
     <router-link class="link" to="/registerGuard" v-if="isAdmin()">
-      Регистрация охранника
+      Охранники
     </router-link>
     <a class="link" @click="onLogoutClicked"> Выход </a>
   </div>

@@ -1,4 +1,5 @@
 import http from "@/netClient/config";
+const sha256 = require("js-sha256");
 
 export async function fetchOffersList() {
   try {
@@ -353,14 +354,14 @@ export async function fetchContracts() {
   }
 }
 
-export async function deleteWorking(id_security,id_order) {
+export async function deleteWorking(id_security, id_order) {
   try {
     let responce = await http.delete("/order/url/working", {
       headers: {
         login: sessionStorage.login,
         password: sessionStorage.password,
         id_security,
-        id_order
+        id_order,
       },
     });
     return responce.data;
@@ -370,3 +371,199 @@ export async function deleteWorking(id_security,id_order) {
   }
 }
 
+export async function regGuard(
+  fio,
+  phone,
+  email,
+  login,
+  pass,
+  experience,
+  height,
+  driver,
+  certificated,
+  weapon
+) {
+  try {
+    login = login.toLowerCase();
+    pass = sha256(pass);
+    let responce = await http.post(
+      "/order/admin/guard",
+      {
+        fio,
+        phone,
+        email,
+        login,
+        pass,
+        experience,
+        height,
+        driver,
+        certificated,
+        weapon,
+      },
+      {
+        headers: {
+          login: sessionStorage.login,
+          password: sessionStorage.password,
+        },
+      }
+    );
+    return responce.data;
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+
+export async function fetchGuardList() {
+  try {
+    let responce = await http.get("/order/admin/guard", {
+      headers: {
+        login: sessionStorage.login,
+        password: sessionStorage.password,
+      },
+    });
+    return responce.data;
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+
+export async function deleteGuard(sid, pid, gid, loginGuard) {
+  try {
+    let responce = await http.delete("/order/admin/guard", {
+      headers: {
+        login: sessionStorage.login,
+        password: sessionStorage.password,
+        sid,
+        pid,
+        gid,
+        loginGuard,
+      },
+    });
+    return responce.data;
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+
+export async function fetchClientList() {
+  try {
+    let responce = await http.get("/order/admin/client", {
+      headers: {
+        login: sessionStorage.login,
+        password: sessionStorage.password,
+      },
+    });
+    return responce.data;
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+
+export async function deleteClient(lid, pid, loginCl) {
+  try {
+    let responce = await http.delete("/order/admin/client", {
+      headers: {
+        login: sessionStorage.login,
+        password: sessionStorage.password,
+        lid,
+        pid,
+        loginCl,
+      },
+    });
+    return responce.data;
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+
+export async function fetchClient() {
+  try {
+    let responce = await http.get("/order/url/client", {
+      headers: {
+        login: sessionStorage.login,
+        password: sessionStorage.password,
+      },
+    });
+    return responce.data[0];
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+
+export async function fetchGuard() {
+  try {
+    let responce = await http.get("/order/security/guard", {
+      headers: {
+        login: sessionStorage.login,
+        password: sessionStorage.password,
+      },
+    });
+    return responce.data[0];
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+
+export async function toLogin() {
+  try {
+    sessionStorage.removeItem("login");
+    sessionStorage.removeItem("userRole");
+    sessionStorage.removeItem("password");
+    sessionStorage.removeItem("object_id");
+    sessionStorage.removeItem("order_id");
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}
+
+export async function regClient(
+  fio,
+  phone,
+  email,
+  login,
+  pass,
+  orgname,
+  inn,
+  ogrn,
+  kpp,
+  uradres,
+  fizadres
+) {
+  try {
+    pass = sha256(pass);
+    let responce = await http.post(
+      "/order/admin/client",
+      {
+        fio,
+        phone,
+        email,
+        login,
+        pass,
+        orgname,
+        inn,
+        ogrn,
+        kpp,
+        uradres,
+        fizadres,
+      },
+      {
+        headers: {
+          login: sessionStorage.login,
+          password: sessionStorage.password,
+        },
+      }
+    );
+    return responce.data[0];
+  } catch (error) {
+    console.log({ error });
+    throw error;
+  }
+}

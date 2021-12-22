@@ -94,6 +94,24 @@ const routes = [
     },
     component: () => import("@/pages/RegisterGuardPage.vue"),
   },
+  {
+    path: "/client",
+    name: "client",
+    meta: {
+      title: "client",
+      layout: "main-layout",
+    },
+    component: () => import("@/pages/ClientPage.vue"),
+  },
+  {
+    path: "/guard",
+    name: "guard",
+    meta: {
+      title: "guard",
+      layout: "main-layout",
+    },
+    component: () => import("@/pages/GuardPage.vue"),
+  },
 ];
 
 const router = new VueRouter({
@@ -108,10 +126,10 @@ router.beforeEach((to, from, next) => {
     if (to.name == "login"){
       next();
     }
-    else if (userRole == "Клиент" && (to.name == "orders" || to.name == "order" || to.name == "objects" || to.name == "object" || to.name == "contracts")){
+    else if (userRole == "Клиент" && (to.name == "orders" || to.name == "order" || to.name == "objects" || to.name == "object" || to.name == "contracts" || to.name == "client")){
       next();
     }
-    else if(userRole == "Охранник" && (to.name == "offers" || to.name == "works" )){
+    else if(userRole == "Охранник" && (to.name == "offers" || to.name == "works" || to.name == "guard")){
       next();
     }
     else if(userRole == "Администратор" && (to.name == "registerClient" || to.name == "registerGuard" )){

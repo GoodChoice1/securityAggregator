@@ -43,6 +43,7 @@ import {
   fetchObject,
   deleteObject,
   changeObject,
+  toLogin,
 } from "@/netClient/services/orderService";
 export default {
   name: "HomePage",
@@ -70,6 +71,8 @@ export default {
         this.adress = this.object.adress;
         this.description = this.object.description;
       } catch (error) {
+        toLogin();
+        this.$router.push("/login");
         console.error({ error });
       }
     },
@@ -86,15 +89,39 @@ export default {
       try {
         let findSql = this.character + this.adress + this.description;
         if (findSql.search('\\"') != -1) {
-          alert("Не используйте в полях ввода такие знаки как ' или \" или $");
+          alert(
+            "Не используйте в полях ввода такие знаки как ' , \" , $ , - , * или / "
+          );
           throw "Error input";
         }
         if (findSql.search("\\'") != -1) {
-          alert("Не используйте в полях ввода такие знаки как ' или \" или $");
+          alert(
+            "Не используйте в полях ввода такие знаки как ' , \" , $ , - , * или / "
+          );
           throw "Error input";
         }
         if (findSql.search("\\$") != -1) {
-          alert("Не используйте в полях ввода такие знаки как ' или \" или $");
+          alert(
+            "Не используйте в полях ввода такие знаки как ' , \" , $ , - , * или / "
+          );
+          throw "Error input";
+        }
+        if (findSql.search("\\-") != -1) {
+          alert(
+            "Не используйте в полях ввода такие знаки как ' , \" , $ , - , * или / "
+          );
+          throw "Error input";
+        }
+        if (findSql.search("\\*") != -1) {
+          alert(
+            "Не используйте в полях ввода такие знаки как ' , \" , $ , - , * или / "
+          );
+          throw "Error input";
+        }
+        if (findSql.search("\\/") != -1) {
+          alert(
+            "Не используйте в полях ввода такие знаки как ' , \" , $ , - , * или / "
+          );
           throw "Error input";
         }
         await changeObject(

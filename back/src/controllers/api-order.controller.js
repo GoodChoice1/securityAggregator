@@ -1,9 +1,10 @@
-const { Router, query } = require("express");
+const { Router } = require("express");
 const {
   asyncHandler,
   connectionHandler,
 } = require("../middlewares/middlewares");
-
+const sha256 = require("js-sha256");
+const ErrorResponse = require("../classes/error-response");
 const router = Router();
 
 function initRoutes() {
@@ -112,15 +113,55 @@ function initRoutes() {
     asyncHandler(connectionHandler),
     asyncHandler(deleteWorking)
   );
+  router.post(
+    "/admin/guard",
+    asyncHandler(connectionHandler),
+    asyncHandler(createGuard)
+  );
+  router.get(
+    "/admin/guard",
+    asyncHandler(connectionHandler),
+    asyncHandler(getGuards)
+  );
+  router.delete(
+    "/admin/guard",
+    asyncHandler(connectionHandler),
+    asyncHandler(deleteGuard)
+  );
+  router.get(
+    "/admin/client",
+    asyncHandler(connectionHandler),
+    asyncHandler(getClients)
+  );
+  router.delete(
+    "/admin/client",
+    asyncHandler(connectionHandler),
+    asyncHandler(deleteClient)
+  );
+  router.get(
+    "/url/client",
+    asyncHandler(connectionHandler),
+    asyncHandler(getClient)
+  );
+  router.get(
+    "/security/guard",
+    asyncHandler(connectionHandler),
+    asyncHandler(getGuard)
+  );
+  router.post(
+    "/admin/client",
+    asyncHandler(connectionHandler),
+    asyncHandler(createClient)
+  );
 }
 
 function dateToString(date) {
   let day = "";
   let month = "";
-  if (parseInt(date.getDate()) < 10){
+  if (parseInt(date.getDate()) < 10) {
     day = "0";
   }
-  if (parseInt(date.getMonth())<10){
+  if (parseInt(date.getMonth()) < 10) {
     month = "0";
   }
   return (
@@ -396,7 +437,7 @@ async function createObject(req, res, next) {
 async function deleteObject(req, res, next) {
   let client = req.client;
   client.connect();
-  query = `
+  let query = `
   DELETE FROM objects WHERE id = ${req.headers.id};
   `;
   await client.query(query);
@@ -437,8 +478,9 @@ async function changeObject(req, res, next) {
   let client = req.client;
   client.connect();
 
-  query = `
-  UPDATE objects SET adress = $nonono$${req.body.adress}$nonono$, description = $nonono$${req.body.description}$nonono$, object_character = $nonono$${req.body.character}$nonono$ WHERE id = ${req.body.id};
+  let query = `
+  UPDATE objects SET adress = $nonono$${req.body.adress}$nonono$, description = $nonono$${req.body.description}$nonono$, 
+  object_character = $nonono$${req.body.character}$nonono$ WHERE id = ${req.body.id};
   `;
   await client.query(query);
   client.end();
@@ -449,7 +491,7 @@ async function getContracts(req, res, next) {
   let client = req.client;
   client.connect();
 
-  query = `
+  let query = `
   SELECT * FROM contract;
   `;
   let result = await client.query(query);
@@ -467,17 +509,216 @@ async function deleteWorking(req, res, next) {
   client.connect();
 
   let query = `
-  UPDATE orders SET amount_of_people_needed = amount_of_people_needed + 1 WHERE id = ${req.headers.id_order}
-  `;
-  await client.query(query);
-  query = `
+  BEGIN;
+  UPDATE orders SET amount_of_people_needed = amount_of_people_needed + 1 WHERE id = ${req.headers.id_order};
   DELETE FROM working_securities WHERE id_security = ${req.headers.id_security} AND id_order = ${req.headers.id_order};
+  COMMIT;
   `;
   await client.query(query);
   client.end();
   res.status(200).json("Успешно");
 }
 
+async function createGuard(req, res, next) {
+  let client = req.client;
+  client.connect();
+
+  let query = `
+  SELECT count(*) FROM persons WHERE phone_number = ${req.body.phone};
+  SELECT count(*) FROM persons WHERE login = $nonono$${req.body.login}$nonono$;
+  SELECT count(*) FROM persons WHERE email = $nonono$${req.body.email}$nonono$;
+  `;
+  let result = await client.query(query);
+  if (result[0].rows[0].count > 0) {
+    throw new ErrorResponse("Телефон занят", 401);
+  } else if (result[1].rows[0].count > 0) {
+    throw new ErrorResponse("Логин занят", 401);
+  } else if (result[2].rows[0].count > 0) {
+    throw new ErrorResponse("Почта занята", 401);
+  }
+  let password = sha256(req.body.pass);
+  query = `
+  INSERT INTO guard_character(weapon_license,work_experience, height, driver_license, is_certificated)
+  VALUES (${req.body.weapon},${req.body.experience},${req.body.height},${req.body.driver},${req.body.certificated});
+  INSERT INTO persons(id_role,phone_number,full_name,login,email)
+  VALUES (1, ${req.body.phone},$nonono$${req.body.fio}$nonono$,$nonono$${req.body.login}$nonono$,$nonono$${req.body.email}$nonono$);
+  SELECT id FROM persons WHERE login = $nonono$${req.body.login}$nonono$;
+  SELECT id FROM guard_character WHERE weapon_license = ${req.body.weapon} AND work_experience =  ${req.body.experience} AND height =  ${req.body.height} AND driver_license =  ${req.body.driver} AND is_certificated =  ${req.body.certificated};
+  CREATE USER ${req.body.login} PASSWORD $nonono$${password}$nonono$;
+  GRANT guard TO ${req.body.login};
+  `;
+
+  result = await client.query(query);
+  query = `
+  INSERT INTO security_guards (id_person, id_character)
+  VALUES (${result[2].rows[0].id},${result[3].rows[0].id})
+  `;
+
+  await client.query(query);
+
+  client.end();
+  res.status(200).json("OK");
+}
+
+async function getGuards(req, res, next) {
+  let client = req.client;
+  client.connect();
+
+  let query = `
+  SELECT s.id as sid, p.id as pid, g.id as gid, p.phone_number, p.full_name, p.login, p.email, g.weapon_license, g.work_experience, g.height, g.driver_license, g.is_certificated
+  FROM security_guards s 
+  JOIN persons p ON p.id = s.id_person
+  JOIN guard_character g ON g.id = s.id_character
+  `;
+  let result = await client.query(query);
+  result = result.rows;
+  client.end();
+  res.status(200).json(result);
+}
+
+async function deleteGuard(req, res, next) {
+  let client = req.client;
+  client.connect();
+  let query = `
+  DELETE FROM working_securities WHERE id_security = ${req.headers.sid};
+  DELETE FROM offers WHERE id_security = ${req.headers.sid};
+  DELETE FROM security_guards  WHERE id = ${req.headers.sid};
+  DELETE FROM persons WHERE id = ${req.headers.pid};
+  DELETE FROM guard_character WHERE id = ${req.headers.gid};
+  DROP ROLE ${req.headers.loginguard}
+  `;
+  let result = await client.query(query);
+  result = result.rows;
+  client.end();
+  res.status(200).json(result);
+}
+
+async function getClients(req, res, next) {
+  let client = req.client;
+  client.connect();
+
+  let query = `
+  SELECT l.id,id_person, legal_name, inn, ogrn, kpp, legal_addres, physical_addres, phone_number, full_name, login, email
+  FROM legal_entitys l
+  JOIN persons p ON p.id = l.id_person
+  `;
+  let result = await client.query(query);
+  result = result.rows;
+  client.end();
+  res.status(200).json(result);
+}
+
+async function deleteClient(req, res, next) {
+  let client = req.client;
+  client.connect();
+  let query = `
+  SELECT o.id AS oid, g.id AS gid FROM orders o
+  JOIN guard_character g ON o.id_character = g.id
+  JOIN objects ob ON ob.id = o.id_object
+  WHERE ob.id_legal_entity = ${req.headers.lid};
+  `;
+  let result = await client.query(query);
+  result = result.rows;
+  for (let i = 0; i < result.length; i++) {
+    query = `
+    DELETE FROM offers WHERE id_order = ${result[i].oid};
+    DELETE FROM working_securities WHERE id_order = ${result[i].oid};
+    DELETE FROM orders WHERE id = ${result[i].oid};
+    DELETE FROM guard_character WHERE id = ${result[i].gid};
+    `;
+
+    await client.query(query);
+  }
+
+  query = `
+  DELETE FROM objects WHERE id_legal_entity = ${req.headers.lid};
+  DELETE FROM contract WHERE id_legal_entity = ${req.headers.lid};
+  DELETE FROM legal_entitys WHERE id = ${req.headers.lid};
+  DELETE FROM persons WHERE id = ${req.headers.pid};
+  DROP ROLE ${req.headers.logincl};
+  `;
+  await client.query(query);
+  client.end();
+  res.status(200).json("OK");
+}
+
+async function getClient(req, res, next) {
+  let client = req.client;
+  client.connect();
+
+  let query = `
+  SELECT *
+  FROM legal_entitys l
+  JOIN persons p ON p.id = l.id_person
+  `;
+  let result = await client.query(query);
+  result = result.rows;
+  client.end();
+  res.status(200).json(result);
+}
+
+async function getGuard(req, res, next) {
+  let client = req.client;
+  client.connect();
+
+  let query = `
+  SELECT *
+  FROM security_guards s
+  JOIN persons p ON p.id = s.id_person
+  JOIN guard_character g ON g.id = s.id_character
+  `;
+  let result = await client.query(query);
+  result = result.rows;
+  client.end();
+  res.status(200).json(result);
+}
+
+async function createClient(req, res, next) {
+  let client = req.client;
+  client.connect();
+
+  let query = `
+  SELECT count(*) FROM persons WHERE phone_number = ${req.body.phone};
+  SELECT count(*) FROM persons WHERE login = $nonono$${req.body.login}$nonono$;
+  SELECT count(*) FROM persons WHERE email = $nonono$${req.body.email}$nonono$;
+  SELECT count(*) FROM legal_entitys WHERE legal_name = $nonono$${req.body.orgname}$nonono$;
+  SELECT count(*) FROM legal_entitys WHERE inn = $nonono$${req.body.inn}$nonono$;
+  SELECT count(*) FROM legal_entitys WHERE ogrn = $nonono$${req.body.ogrn}$nonono$;
+  
+  `;
+  let result = await client.query(query);
+  if (result[0].rows[0].count > 0) {
+    throw new ErrorResponse("Телефон занят", 401);
+  } else if (result[1].rows[0].count > 0) {
+    throw new ErrorResponse("Логин занят", 401);
+  } else if (result[2].rows[0].count > 0) {
+    throw new ErrorResponse("Почта занята", 401);
+  } else if (result[3].rows[0].count > 0) {
+    throw new ErrorResponse("Юр лицо с таким названием существует", 401);
+  } else if (result[4].rows[0].count > 0) {
+    throw new ErrorResponse("Юр лицо с таким инн существует", 401);
+  } else if (result[5].rows[0].count > 0) {
+    throw new ErrorResponse("Юр лицо с таким огрн существует", 401);
+  }
+  let password = sha256(req.body.pass);
+  query = `
+  INSERT INTO persons(id_role,phone_number,full_name,login,email)
+  VALUES (2, ${req.body.phone},$nonono$${req.body.fio}$nonono$,$nonono$${req.body.login}$nonono$,$nonono$${req.body.email}$nonono$);
+  SELECT id FROM persons WHERE login = $nonono$${req.body.login}$nonono$;
+  CREATE USER ${req.body.login} PASSWORD $nonono$${password}$nonono$;
+  GRANT urLico TO ${req.body.login};
+  `;
+  result = await client.query(query);
+  query = `
+  INSERT INTO legal_entitys (id_person, legal_name, inn, ogrn, kpp, legal_addres, physical_addres)
+  VALUES (${result[1].rows[0].id}, $nonono$${req.body.orgname}$nonono$,${req.body.inn},${req.body.ogrn},${req.body.kpp},$nonono$${req.body.uradres}$nonono$,$nonono$${req.body.fizadres}$nonono$)
+  `;
+
+  await client.query(query);
+
+  client.end();
+  res.status(200).json("OK");
+}
 
 initRoutes();
 

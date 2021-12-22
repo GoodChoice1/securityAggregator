@@ -34,18 +34,20 @@
         </button>
         <div><br /></div>
         <form @submit.prevent="onFormSubmit">
-          <label for="amountPeople"></label>
-          Изменить количество людей требуемых в заявке на
-          <br />
-          <input
-            v-model="amountPeople"
-            id="amountPeople"
-            type="number"
-            required
-            min="0"
-            max="10000"
-          />
-          <button class="submit-btn" type="submit">Изменить задание</button>
+          <div class="form-field-number">
+            <label for="amountPeople"></label>
+            Изменить количество людей требуемых в заявке на
+            <br />
+            <input
+              v-model="amountPeople"
+              id="amountPeople"
+              type="number"
+              required
+              min="0"
+              max="10000"
+            />
+            <button class="submit-btn" type="submit">Изменить задание</button>
+          </div>
         </form>
       </div>
       <br />
@@ -60,7 +62,11 @@
           <div>ФИО охранника: {{ worker.full_name }}</div>
           <div>Телефон охранника: {{ worker.phone_number }}</div>
           <div>Эл. почта охранника: {{ worker.email }}</div>
-          <button class="submit-btn" @click="deleteWorking(worker.id,worker.ord_id)" type="submit">
+          <button
+            class="submit-btn"
+            @click="deleteWorking(worker.id, worker.ord_id)"
+            type="submit"
+          >
             Отказаться работать с охранником
           </button>
         </li>
@@ -199,9 +205,9 @@ export default {
         console.error({ error });
       }
     },
-    async deleteWorking(id_security,id_order) {
+    async deleteWorking(id_security, id_order) {
       try {
-        await deleteWorking(id_security,id_order);
+        await deleteWorking(id_security, id_order);
         this.fetchOrder();
         this.fetchWorking();
         this.fetchToOffer();

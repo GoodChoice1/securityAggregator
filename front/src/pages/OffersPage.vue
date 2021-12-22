@@ -28,6 +28,7 @@ import {
   fetchOffersList,
   agreeForWork,
   deleteOffer,
+  toLogin,
 } from "@/netClient/services/orderService";
 export default {
   name: "HomePage",
@@ -47,6 +48,8 @@ export default {
       try {
         this.offersList = await fetchOffersList();
       } catch (error) {
+        toLogin();
+        this.$router.push("/login");
         console.error({ error });
       }
     },

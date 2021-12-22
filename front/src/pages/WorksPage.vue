@@ -28,6 +28,7 @@
 import {
   fetchWorkList,
   deleteWorking,
+  toLogin,
 } from "@/netClient/services/orderService";
 export default {
   name: "HomePage",
@@ -47,6 +48,8 @@ export default {
       try {
         this.workList = await fetchWorkList();
       } catch (error) {
+        toLogin();
+        this.$router.push("/login");
         console.error({ error });
       }
     },
