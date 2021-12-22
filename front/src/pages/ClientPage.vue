@@ -5,7 +5,7 @@
     <div>ФИО: {{ client.full_name }}</div>
     <div>Логин: {{ client.login }}</div>
     <div>Телефон: {{ client.phone_number }}</div>
-    <div>Наименование юр.лица: {{ client.legal_name }}</div>
+    <div>Наименование юр. лица: {{ client.legal_name }}</div>
     <div>ИНН: {{ client.inn }}</div>
     <div>ОГРН: {{ client.ogrn }}</div>
     <div>КПП: {{ client.kpp }}</div>

@@ -106,7 +106,7 @@
           <div>ФИО клиента: {{ client.full_name }}</div>
           <div>Логин: {{ client.login }}</div>
           <div>Телефон: {{ client.phone_number }}</div>
-          <div>Наименование юр.лица: {{ client.legal_name }}</div>
+          <div>Наименование юр. лица: {{ client.legal_name }}</div>
           <div>Эл.почта: {{ client.email }}</div>
           <button
             class="submit-btn"

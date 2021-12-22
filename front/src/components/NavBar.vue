@@ -28,10 +28,10 @@
       Профиль
     </router-link>
     <router-link class="link" to="/registerClient" v-if="isAdmin()">
-      ЮрЛица
+      Юр. лица
     </router-link>
     <router-link class="link" to="/changeClient" v-if="isAdmin()">
-      Изменить юрлицо
+      Изменить Юр. лицо
     </router-link>
     <router-link class="link" to="/registerGuard" v-if="isAdmin()">
       Охранники
@@ -65,9 +65,9 @@ export default {
     isClient() {
       return sessionStorage.userRole == "Клиент";
     },
-    isAdmin(){
+    isAdmin() {
       return sessionStorage.userRole == "Администратор";
-    }
+    },
   },
 };
 </script>
