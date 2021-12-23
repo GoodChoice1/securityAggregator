@@ -447,20 +447,12 @@ async function createOrder(req, res, next) {
     `;
 
   let result = await client.query(query);
-  let id_client = result.rows[0].id;
 
   query = `INSERT INTO guard_character(weapon_license,work_experience, height,driver_license,is_certificated)
-  VALUES (${req.body.weapon},${req.body.experience},${req.body.height},${req.body.driver},${req.body.certificated});
-  SELECT id 
-  FROM guard_character 
-  WHERE weapon_license = ${req.body.weapon} 
-  AND work_experience = ${req.body.experience} 
-  AND height = ${req.body.height} 
-  AND driver_license = ${req.body.driver}
-  AND is_certificated = ${req.body.certificated};
+  VALUES (${req.body.weapon},${req.body.experience},${req.body.height},${req.body.driver},${req.body.certificated}) RETURNING id;
   `;
   result = await client.query(query);
-  let id_char = result[1].rows[0].id;
+  let id_char = result.rows[0].id;
   query = `INSERT INTO orders (id_object,id_character,amount_of_people_needed, price_per_hour, work_date_start, work_date_end, description)
   VALUES (${req.body.object_id},${id_char},${req.body.amountPeople},${req.body.price},'${req.body.dateStart}','${req.body.dateEnd}',$nononon$${req.body.description}$nononon$)
     `;
@@ -594,11 +586,9 @@ async function createGuard(req, res, next) {
   let password = sha256(req.body.pass);
   query = `
   INSERT INTO guard_character(weapon_license,work_experience, height, driver_license, is_certificated)
-  VALUES (${req.body.weapon},${req.body.experience},${req.body.height},${req.body.driver},${req.body.certificated});
+  VALUES (${req.body.weapon},${req.body.experience},${req.body.height},${req.body.driver},${req.body.certificated}) RETURNING id;
   INSERT INTO persons(id_role,phone_number,full_name,login,email)
-  VALUES (1, ${req.body.phone},$nonono$${req.body.fio}$nonono$,$nonono$${req.body.login}$nonono$,$nonono$${req.body.email}$nonono$);
-  SELECT id FROM persons WHERE login = $nonono$${req.body.login}$nonono$;
-  SELECT id FROM guard_character WHERE weapon_license = ${req.body.weapon} AND work_experience =  ${req.body.experience} AND height =  ${req.body.height} AND driver_license =  ${req.body.driver} AND is_certificated =  ${req.body.certificated};
+  VALUES (1, ${req.body.phone},$nonono$${req.body.fio}$nonono$,$nonono$${req.body.login}$nonono$,$nonono$${req.body.email}$nonono$) RETURNING id;
   CREATE USER ${req.body.login} PASSWORD $nonono$${password}$nonono$;
   GRANT guard TO ${req.body.login};
   `;
@@ -606,7 +596,7 @@ async function createGuard(req, res, next) {
   result = await client.query(query);
   query = `
   INSERT INTO security_guards (id_person, id_character)
-  VALUES (${result[2].rows[0].id},${result[3].rows[0].id})
+  VALUES (${result[1].rows[0].id},${result[0].rows[0].id})
   `;
 
   await client.query(query);
