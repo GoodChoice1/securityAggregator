@@ -17,12 +17,13 @@ export async function fetchOffersList() {
   }
 }
 
-export async function agreeForWork(offer_id) {
+export async function agreeForWork(sid, orid) {
   try {
     await http.patch(
       "/order/security/offer",
       {
-        offer_id,
+        sid,
+        orid,
       },
       {
         headers: {

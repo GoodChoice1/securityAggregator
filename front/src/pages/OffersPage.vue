@@ -10,7 +10,7 @@
         <button
           class="submit-btn"
           type="submit"
-          @click="agreeForWork(offer.id)"
+          @click="agreeForWork(offer.sid,offer.orid)"
         >
           Согласиться
         </button>
@@ -53,9 +53,9 @@ export default {
         console.error({ error });
       }
     },
-    async agreeForWork(id) {
+    async agreeForWork(sid,orid) {
       try {
-        await agreeForWork(id);
+        await agreeForWork(sid,orid);
         this.fetchOffersList();
       } catch (error) {
         console.error({ error });

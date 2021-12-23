@@ -5,7 +5,6 @@ const {
 } = require("../middlewares/middlewares");
 const sha256 = require("js-sha256");
 const ErrorResponse = require("../classes/error-response");
-const { resolveSoa } = require("dns");
 const router = Router();
 
 function initRoutes() {
@@ -345,9 +344,24 @@ async function acceptOffer(req, res, next) {
   let client = req.client;
   client.connect();
   let query = `
-    CALL acceptOffer(${req.body.offer_id});
+    BEGIN;
+    INSERT INTO working_securities(id_order,id_security)
+    VALUES (${req.body.orid},${req.body.sid});
+    UPDATE orders SET amount_of_people_needed = amount_of_people_needed - 1 WHERE id = ${req.body.orid};
+    SELECT amount_of_people_needed FROM orders WHERE id =${req.body.orid};
+    DELETE FROM offers WHERE id_order = ${req.body.orid} AND id_security = ${req.body.sid};
     `;
+
   let result = await client.query(query);
+  query = `
+    COMMIT;
+    `;
+  if (result[3].rows[0].amount_of_people_needed < 0){
+    query = `
+    ROLLBACK;
+  `;
+  }
+  await client.query(query);
   client.end();
   result = result.rows;
   res.status(200).json(result);
