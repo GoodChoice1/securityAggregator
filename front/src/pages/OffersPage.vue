@@ -1,7 +1,7 @@
 <template>
   <div class="main">
     <ul v-if="isOffers">
-      <li v-for="offer in offersList" :key="offer.id" class="todo">
+      <li v-for="offer in offersList" :key="offer.id_order" class="todo">
         <div>Описание работы: {{ offer.description }}</div>
         <div>Характер объекта: {{ offer.object_character }}</div>
         <div>Оплата: {{ offer.price_per_hour }}руб. в час</div>
@@ -14,7 +14,7 @@
         >
           Согласиться
         </button>
-        <button class="submit-btn" type="submit" @click="declineWork(offer.id)">
+        <button class="submit-btn" type="submit" @click="declineWork(offer.sid,offer.orid)">
           Отказаться
         </button>
       </li>
@@ -61,9 +61,9 @@ export default {
         console.error({ error });
       }
     },
-    async declineWork(id) {
+    async declineWork(sid,orid) {
       try {
-        await deleteOffer(id);
+        await deleteOffer(orid,sid);
         this.fetchOffersList();
       } catch (error) {
         console.error({ error });

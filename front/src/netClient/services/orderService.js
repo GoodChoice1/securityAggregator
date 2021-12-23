@@ -38,13 +38,14 @@ export async function agreeForWork(sid, orid) {
   }
 }
 
-export async function deleteOffer(offer_id) {
+export async function deleteOffer(orid, sid) {
   try {
     await http.delete("/order/offer", {
       headers: {
         login: sessionStorage.login,
         password: sessionStorage.password,
-        offer_id,
+        orid,
+        sid,
       },
     });
   } catch (error) {

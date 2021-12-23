@@ -220,7 +220,7 @@ async function getOffers(req, res, next) {
   let client = req.client;
   client.connect();
   let query = `
-    DELETE FROM offers WHERE id = (SELECT id FROM viewOffers WHERE amount_of_people_needed<1)
+    DELETE FROM offers WHERE id_order = (SELECT id_order FROM viewOffers WHERE amount_of_people_needed<1) AND id_security = (SELECT id_security FROM viewOffers WHERE amount_of_people_needed<1);
     `;
   let result = await client.query(query);
   query = `
@@ -371,7 +371,7 @@ async function deleteOffer(req, res, next) {
   let client = req.client;
   client.connect();
   let query = `
-    DELETE FROM offers WHERE id = ${req.headers.offer_id} ;
+    DELETE FROM offers WHERE id_security = ${req.headers.sid} AND id_order = ${req.headers.orid};
     `;
   await client.query(query);
   client.end();
