@@ -447,8 +447,8 @@ async function createOrder(req, res, next) {
   `;
   result = await client.query(query);
   let id_char = result[1].rows[0].id;
-  query = `INSERT INTO orders (id_object,id_character,id_legal,amount_of_people_needed, price_per_hour, work_date_start, work_date_end, description)
-  VALUES (${req.body.object_id},${id_char},${id_client},${req.body.amountPeople},${req.body.price},'${req.body.dateStart}','${req.body.dateEnd}',$nononon$${req.body.description}$nononon$)
+  query = `INSERT INTO orders (id_object,id_character,amount_of_people_needed, price_per_hour, work_date_start, work_date_end, description)
+  VALUES (${req.body.object_id},${id_char},${req.body.amountPeople},${req.body.price},'${req.body.dateStart}','${req.body.dateEnd}',$nononon$${req.body.description}$nononon$)
     `;
 
   result = await client.query(query);

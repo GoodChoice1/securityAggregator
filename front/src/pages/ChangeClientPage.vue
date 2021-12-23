@@ -44,7 +44,7 @@
           <br />
           <input v-model="cdate" id="cdate" type="date" required />
           <br />
-          <button class="submit-btn" type="submit">Изменить</button>
+          <button class="submit-btn" type="submit">Добавить</button>
         </div>
       </form>
 
